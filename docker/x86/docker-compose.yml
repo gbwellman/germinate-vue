@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 9306:3306
+    volumes:
+      - type: volume
+        source: mysql
+        target: /var/lib/mysql/
+    environment:
+      # The root password. This is not used by Germinate, but can be used to access the database externally
+      MYSQL_ROOT_PASSWORD: ebvjmrme7twltk0u #PASSWORD_HERE
+      # The name of the Germinate database, e.g. "germinate"
+      MYSQL_DATABASE: db-mysql-fra1-94366 #GERMINATE_DATABASE_NAME
+      # The username Germinate will use to connect to this database
+      MYSQL_USER: germinate #DATABASE_USER
+      # The password Germinate will use to connect to this database
+      MYSQL_PASSWORD: jc8evtmcutz8msz2 #DATABASE_PASSWORD
+    restart: unless-stopped
+    container_name: mysql
+
+  tomcat:
+      image: cropgeeks/germinate:release-x86-4.1.1
+      environment:
+        - JAVA_OPTS:-Xmx512m
+      ports:
+        - 9080:8080
+      volumes:
+        - type: bind
+          # This points to where your Germinate configuration folder is outside the container
+          source: /path/to/your/germinate/config
+          target: /data/germinate
+        - type: volume
+          source: germinate
+          target: /usr/local/tomcat/temp
+      restart: unless-stopped
+      container_name: germinate
+      depends_on:
+        - "mysql"
+
+volumes:
+  germinate:
+  mysql:
